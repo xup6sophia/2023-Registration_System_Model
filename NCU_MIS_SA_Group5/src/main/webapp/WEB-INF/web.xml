@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:web="http://xmlns.jcp.org/xml/ns/javaee" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd">
+  <servlet>
+    <servlet-name>Event</servlet-name>
+    <servlet-class>EventController</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>Event</servlet-name>
+    <url-pattern>/api/event.do</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>CollectionController</display-name>
+    <servlet-name>CollectionController</servlet-name>
+    <servlet-class>CollectionController</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>CollectionController</servlet-name>
+    <url-pattern>/api/collection.do</url-pattern>
+  </servlet-mapping>
+</web-app>
