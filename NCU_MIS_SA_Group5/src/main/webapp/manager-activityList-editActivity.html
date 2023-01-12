@@ -1,0 +1,356 @@
+<!-- 前端ＯＫscript來不及研究id待改 -->
+<!doctype html>
+<html lang="en">
+
+<head>
+<!-- Required meta tags -->
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<!-- Bootstrap CSS -->
+<link rel="stylesheet" href="statics/scss/all.css">
+
+<!-- ajax -->
+<script src="statics/js/jquery-3.4.1.min.js" crossorigin="anonymous"></script>
+
+<title>中央大學藝文中心</title>
+</head>
+
+<body>
+	<!-- navBar -->
+	<script src="statics/js/meta_content/navBar_manager.js"></script>
+
+    <!-- tabBar -->
+    <div class="bg-tabBar py-5">
+		<div class="d-flex justify-content-center mb-3 px-5">
+			<div class="row">
+				<div class="col">
+					<form action="manager-managerList.html">
+						<button type="submit" class="btn-tabBar">管理者資料管理</button>
+					</form>
+				</div>
+				<div class="col">
+					<form action="manager-userList.html">
+						<button type="submit" class="btn-tabBar btn-tabBar-hover">會員資料管理</button>
+					</form>
+				</div>
+				<div class="col">
+					<form action="manager-activityList.html">
+						<button type="submit" class="btn-tabBar">活動資料管理</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+
+    <!-- 活動資訊 -->
+    <div class="containter py-5 px-5 main_view">
+        <div class="d-flex justify-content-between mb-3 px-5">
+            <div class="myTitle-main">活動資料更動</div>
+            <div class="submit d-flex justify-content-center">
+                <input class="btn  btn-outline-primary" type="submit" value="儲存更動" id="submit">
+            </div>
+        </div>
+        <!-- 表單form -->
+        <!-- 待修改:maxlength? 為什麼class 也需要reqired之類的-->
+        <div id="main_view" class="containter py-5 px-5 main_view">
+            <div id="edit_form"></div>
+        </div>
+
+        
+    
+    
+
+    <script>
+	    var url_string = window.location.href;
+		var url = new URL(url_string);
+		var event_id = url.searchParams.get("event_id");
+        console.log(event_id);
+
+        var arr=[];
+        var del=[];
+        var num=0;
+        var count=1;
+       var tbody;
+
+        function getEventInfo(event_id) {
+		
+		// 發出POST的GET請求取得所有會員列表
+		$.ajax({
+			type : "GET",
+			url : "api/event.do",
+			crossDomain : true,
+			data : "event_id=" + event_id,
+			cache : false,
+			dataType : 'json',
+			timeout : 5000,
+			success : function(response) {
+				//假設取得成功，更新前端表格
+				if (response.status == 200) {
+					updateInfo(response.response.data);
+				}
+				console.log(response);
+			},
+			error : function() {
+				alert("無法連線到伺服器!!!");
+			}
+		});
+	    }   
+    function updateInfo(data) {
+		// 清空前端main_view
+		$("#edit_form").empty();
+	
+		var info_html = '';
+	
+		//info_html+= data[0]['event_info']['event_title'];
+		
+		var default_eventtype_description = data[0]["eventtype_description"]
+		var default_eventtype_id = data[0]["event_info"]["eventtype_id"]
+		var deafult_event_start_date = new Date( data[0]["event_info"]["event_start_date"] ).toISOString().slice(0, -1);
+		var deafult_event_end_date = new Date( data[0]["event_info"]["event_end_date"] ).toISOString().slice(0, -1);
+
+		info_html += '<form id="form" accept-charset="utf-8" class="needs-validation">';
+        info_html += '<div style="display:none;"><input type="hidden" name="_method" value="POST"></div>';
+        info_html += '<div class="px-5 mb-3"> <label for="input_event_type" class="form-label">活動種類 * </label> <select id="input_event_type" class="form-select" name="type" type="number" required> <option value=' + default_eventtype_id + ' selected>' + default_eventtype_description + '</option> <option value=1>演講座談</option> <option value=2>藝文特展</option> <option value=3>音樂舞台</option> <option value=4>107影享會</option> <option value=5>工作坊</option> <option value=6>崑曲展演</option> <option value=7>其他</option> </select> </div>';
+		info_html += '<form id="form" accept-charset="utf-8" class="needs-validation">';
+	    info_html += '<div style="display:none;"><input type="hidden" name="_method" value="POST"></div>';
+        info_html += '<div class="px-5 mb-3"> <label for="input_event_title" class="form-label">活動名稱 *</label> <input class="form-control" name="name" type="text" id="input_event_title" placeholder='+ data[0]['event_info']['event_title']+' value='+data[0]['event_info']['event_title']+' > </div>';
+        info_html += '<div class="px-5 mb-3"> <label for="input_introduction" class="form-label">活動介紹</label> <input class="form-control" name="name" type="text" id="input_introduction" placeholder='+data[0]['event_info']['event_introduction']+' value='+data[0]['event_info']['event_introduction']+' required> </div>';
+        info_html += '<div class="px-5 mb-3"> <label for="input_start_date" class="form-label">活動開始日期 *</label> <input class="form-control" name="datepicker" type="datetime-local" id="input_start_date" value=' + deafult_event_start_date + ' required> </div>';
+        info_html += '<div class="px-5 mb-3"> <label for="input_end_date" class="form-label">活動結束日期 *</label> <input class="form-control" name="datepicker" type="datetime-local" id="input_end_date" value=' + deafult_event_end_date + ' required> </div>';
+        info_html += '<div class="px-5 mb-3"> <label for="input_place" class="form-label">活動地點 *</label> <input class="form-control" name="place" type="text" id="input_place" placeholder='+data[0]['event_info']['event_place']+' value='+data[0]['event_info']['event_place']+'  required> </div>';
+        info_html += '<div class="px-5 mb-3"> <label for="input_notification" class="form-label">活動注意事項</label> <input class="form-control" name="notice" type="text" id="input_notification" placeholder=notification value='+data[0]['event_info']['event_notification']+' required> </div>';
+        info_html += '<div class="px-5 mb-5"> <label for="input_image" class="form-label">選擇活動照片 *</label> <input class="form-control" name="picture" type="file" id="input_image" required> </div>';
+        info_html += '<div class="px-5 mb-3"> <label for="input_end_date" class="form-label">活動場次 </label> <input type="button" class="btn btn-outline-primary" id="btn" value="新增" onclick="AddEventSession()"> </div>';
+        info_html += '<div class="px-5 mb-3" id = "eventsesion"> <div class="card bg-dark text-white"><div class="card-body">';
+        info_html += '<label for="input_eventsession_title" class="form-label">活動場次名稱 *</label> <input class="form-control" name="name" type="text" id="input_eventsession_title" placeholder="你的活動場次名稱" required> <label for="input_eventsession_start_date" class="form-label">場次開始時間 *</label> <input class="form-control" name="text" type="datetime-local" id="input_eventsession_start_date" placeholder="活動場次開始時間" required>';
+        info_html += '<label for="input_eventsession_end_date" class="form-label">場次結束時間 *</label> <input class="form-control" name="text" type="datetime-local" id="input_eventsession_end_date" placeholder="活動場次結束時間" required> <label for="input_eventsession_limitnum" class="form-label">人數限制 * <label> <p> </p> <input class="form-control" name="text" type="number" id="input_num" placeholder="活動場次人數限制" required> </div> </div> </div></form></div>';
+        info_html += '<div class="containter py-5 px-5 main_view">';
+        info_html += '<div class="container container-fluid py-5"> <div class="d-flex justify-content-start mb-3"> <div class="myTitle-main">已新增場次</div> </div>';
+        info_html += '<table id="event_list_table" class="table table-hover"> <thead> <tr> <th scope="col">場次名稱</th> <th scope="col">開始時間</th> <th scope="col">結束時間</th> <th scope="col">人數限制</th> <th scope="col">功能</th> </tr> </thead> <tbody> </tbody> </table> </div> </div>';
+		
+		// 重新append所有會員row
+		$("#edit_form").append(info_html);
+		tbody = document.querySelector('tbody');
+		
+        $.each(data[0]["eventsessions_info"],function(index,value){
+            var tr = document.createElement('tr');
+            tbody.appendChild(tr);
+            
+            var oEventP =document.createElement("EventP");
+            var oStartP =document.createElement("StartP");
+            var oEndP =document.createElement("EndP");
+            var oNumP =document.createElement("NumP");
+
+            oEventP.innerHTML=value["eventsessions_title"];
+            oStartP.innerHTML=value["eventsessions_start_date"];
+            oEndP.innerHTML=value["eventsessions_end_date"];
+            oNumP.innerHTML=value["eventsessions_limitnum"];
+               
+            var td = document.createElement('td');
+            td.appendChild(oEventP);
+            tr.appendChild(td);
+            var td = document.createElement('td');
+            td.appendChild(oStartP);
+            tr.appendChild(td);
+            var td = document.createElement('td');
+            td.appendChild(oEndP);
+            tr.appendChild(td);
+            var td = document.createElement('td');
+            td.appendChild(oNumP);
+            tr.appendChild(td);
+            var td = document.createElement('td');
+            td.innerHTML = '<a href="javascript:;">删除</a>';
+            tr.appendChild(td);
+
+            var eventsession={
+                "eventsessions_id": value["eventsessions_id"].toString(),
+                "eventsessions_title":value["eventsessions_title"],
+                "eventsessions_limitnum":value["eventsessions_limitnum"],
+                "eventsessions_start_date":value["eventsessions_start_date"],
+                "eventsessions_end_date":value["eventsessions_end_date"],
+                "eventsessions_isCanceled":0
+            }
+            arr.push(eventsession);
+            
+        })
+		
+        var as = document.querySelectorAll('a');
+        for(var i = 0; i < as.length; i++){
+            as[i].onclick = function(){
+                var index = Array.prototype.indexOf.call(this.parentNode.parentNode.parentNode.children, this.parentNode.parentNode);
+                var removedItem =arr.splice(index,1);
+                tbody.removeChild(this.parentNode.parentNode);
+                // del.push(this.parentNode.parentNode.childNodes[0].childNodes[0].innerHTML);
+                // // console.log(del);
+                num-=1;
+            }
+        }
+        
+	}
+    
+
+
+        function AddEventSession()
+        {   
+
+            num+=1;
+            // console.log(num);
+            var tr = document.createElement('tr');
+            tbody.appendChild(tr);
+            var oEventText=document.getElementById("input_eventsession_title");
+            var oStartText=document.getElementById("input_eventsession_start_date");
+            var oEndText=document.getElementById("input_eventsession_end_date");
+            var oNumText=document.getElementById("input_num");
+
+            var oEventP =document.createElement("EventP");
+            var oStartP =document.createElement("StartP");
+            var oEndP =document.createElement("EndP");
+            var oNumP =document.createElement("NumP");
+
+            oEventP.innerHTML=oEventText.value;
+            oStartP.innerHTML=new Date(oStartText.value).toISOString().slice(0, 19).replace('T', ' ');
+            oEndP.innerHTML=new Date(oEndText.value).toISOString().slice(0, 19).replace('T', ' ');
+            oNumP.innerHTML=oNumText.value;
+            
+            var td = document.createElement('td');
+            td.appendChild(oEventP);
+            tr.appendChild(td);
+            var td = document.createElement('td');
+            td.appendChild(oStartP);
+            tr.appendChild(td);
+            var td = document.createElement('td');
+            td.appendChild(oEndP);
+            tr.appendChild(td);
+            var td = document.createElement('td');
+            td.appendChild(oNumP);
+            tr.appendChild(td);
+            var td = document.createElement('td');
+            td.innerHTML = '<a href="javascript:;">删除</a>';
+            tr.appendChild(td);
+
+            
+            var eventsession={
+            	"eventsessions_id": "",
+                "eventsessions_title":oEventText.value,
+                "eventsessions_limitnum":oNumText.value,
+                "eventsessions_start_date":new Date(oStartText.value).toISOString().slice(0, 19).replace('T', ' '),
+                "eventsessions_end_date":new Date(oEndText.value).toISOString().slice(0, 19).replace('T', ' '),
+                "eventsessions_isCanceled":0,
+                
+            }
+            
+            arr.push(eventsession);
+
+            var as = document.querySelectorAll('a');
+            for(var i = 0; i < as.length; i++){
+                as[i].onclick = function(){
+                    var index = Array.prototype.indexOf.call(this.parentNode.parentNode.parentNode.children, this.parentNode.parentNode);
+                    var removedItem =arr.splice(index,1);
+                    tbody.removeChild(this.parentNode.parentNode);
+                    // del.push(this.parentNode.parentNode.childNodes[0].childNodes[0].innerHTML);
+                    // // console.log(del);
+                    num-=1;
+                }
+            }
+        }
+    </script>
+    
+    
+
+    <script>
+        var eventsessioncount = 1;
+   		// var event_id = JSON.parse(sessionStorage.getItem("event_id"));
+   		// let event_id_string = event_id.toString();
+    
+   
+            // 處理表單點擊事件
+            var $form = $('#submit');
+            $form.click(function () {
+                submit();
+            });
+
+            function submit() {
+            	
+            	console.log(arr);
+            	
+	            // 將前端表單填寫值存進變數
+				var url_string = window.location.href;
+        		var url = new URL(url_string);
+        		var event_id = url.searchParams.get("event_id");
+        		
+	            
+	            var event_name = $('#input_event_title').val();
+	            var event_type = $('#input_event_type').val();
+	            
+	            var introduction = $('#input_introduction').val();
+                var start_date = $('#input_start_date').val();
+                var end_date = $('#input_end_date').val();
+                var notification = $('#input_notification').val();
+	            var content = $('#input_content').val();
+	            var place = $('#input_place').val();
+	            var image = "statics/img/kunqu_1.jpg";
+	
+	            // 格式設定(未做)
+	
+	            // 將資料組成JSON格式(格式名稱參照文件)
+	            var data_object = {
+	            	"event_id": event_id,
+	            	"event_title" : event_name,
+	            	"eventtype_id" : event_type,
+	            	"event_introduction" : introduction,
+	            	"event_isCanceled": 0,
+                    "event_place" : place,
+                    "event_start_date" : start_date,
+                    "event_end_date" : end_date,
+                    "event_notification" : notification,
+	            	"event_image" : image,
+                    "event_sessions":arr
+	            };
+	            
+	            // console.log(data_object);
+	
+	            // 將JSON格式轉換成字串
+	            
+	            var data_string = JSON.stringify(data_object);
+
+                console.log(data_string);
+	
+	            // 發出POST的AJAX請求(未做)
+	            $.ajax({
+	                type: "PUT",
+	                url: "api/event.do",
+	                data: data_string,
+	                crossDomain: true,
+	                cache: false,
+	                dataType: 'json',
+	                timeout: 5000,
+	                success: function (response) {
+	                	
+	                    if (response.status == 200) {
+	                    	alert("活動修改成功!");
+	                    	document.location.href = "manager-activityList.html";
+	                    }
+	                },
+	                error: function () {
+	                    alert("無法連線到伺服器！");
+	                }
+	            });
+            }    
+            	
+            $(document).ready(function () {
+        		//sessionStorage.setItem("user_id", "6");
+        	    getEventInfo(event_id);
+        	});
+    </script>
+
+
+    <!-- Optional JavaScript; choose one of the two! -->
+
+    <!-- Option 1: Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-/bQdsTh/da6pkI1MST/rWKFNjaCP5gBSY4sEBT38Q/9RBh9AH40zEOg7Hlq2THRZ"
+        crossorigin="anonymous"></script>
+</body>
+
+</html>
