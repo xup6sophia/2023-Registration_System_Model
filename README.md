@@ -1,6 +1,6 @@
 # Registration System Model
 * 2022 NCUIM SA Final Project 系統分析與設計期末專題
-* An activity registration system model for NCU Art Center.
+* An activity registration system model for NCU Art Center, written in MVC structure.
 * Key Words: 
   - Frontend: Html/CSS/JavaScript/BootStrap
   - Backend: JavaServlet
